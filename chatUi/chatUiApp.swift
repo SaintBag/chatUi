@@ -13,7 +13,7 @@ struct chatUiApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            LogInView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
