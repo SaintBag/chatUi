@@ -6,8 +6,19 @@
 //
 
 import SwiftUI
-import CoreData
+import Firebase
+//import CoreData
 
+class FirebaseManager: NSObject {
+    
+    let auth: Auth
+    static let shared = FirebaseManager()
+    override init() {
+        FirebaseApp.configure()
+        self.auth = Auth.auth()
+            super.init()
+    }
+}
 struct LogInView: View {
     
     @State var isLoginMode = false
@@ -58,92 +69,51 @@ struct LogInView: View {
                             Spacer()
                         }.background(.blue)
                     }
+                    Text(self.loginStatusMessage)
+                        .foregroundColor(.red)
                 }
                 .padding()
             }
             .navigationTitle(isLoginMode ? "Log in" : "Create Account")
             .background(Color(.init(white: 0, alpha: 0.05))
-                .ignoresSafeArea()
-            )
+                .ignoresSafeArea())
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
     private func handleAction() {
         if isLoginMode {
-            print("Schould log into Firebase with existing credentials")
+            loginUser()
+//            print("Schould log into Firebase with existing credentials")
         } else {
-            print("Schould register a new account inside of Firebase with Auth and schould upload image somehow")
+            createNewAccount()
+            //            print("Schould register a new account inside of Firebase with Auth and schould upload image somehow")
         }
     }
-    //    @Environment(\.managedObjectContext) private var viewContext
-    //
-    //    @FetchRequest(
-    //        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-    //        animation: .default)
-    //    private var items: FetchedResults<Item>
-    //
-    //    var body: some View {
-    //        NavigationView {
-    //            List {
-    //                ForEach(items) { item in
-    //                    NavigationLink {
-    //                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-    //                    } label: {
-    //                        Text(item.timestamp!, formatter: itemFormatter)
-    //                    }
-    //                }
-    //                .onDelete(perform: deleteItems)
-    //            }
-    //            .toolbar {
-    //                ToolbarItem(placement: .navigationBarTrailing) {
-    //                    EditButton()
-    //                }
-    //                ToolbarItem {
-    //                    Button(action: addItem) {
-    //                        Label("Add Item", systemImage: "plus")
-    //                    }
-    //                }
-    //            }
-    //            Text("Select an item")
-    //        }
-    //    }
-    //
-    //    private func addItem() {
-    //        withAnimation {
-    //            let newItem = Item(context: viewContext)
-    //            newItem.timestamp = Date()
-    //
-    //            do {
-    //                try viewContext.save()
-    //            } catch {
-    //                // Replace this implementation with code to handle the error appropriately.
-    //                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-    //                let nsError = error as NSError
-    //                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-    //            }
-    //        }
-    //    }
-    //
-    //    private func deleteItems(offsets: IndexSet) {
-    //        withAnimation {
-    //            offsets.map { items[$0] }.forEach(viewContext.delete)
-    //
-    //            do {
-    //                try viewContext.save()
-    //            } catch {
-    //                // Replace this implementation with code to handle the error appropriately.
-    //                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-    //                let nsError = error as NSError
-    //                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-    //            }
-    //        }
-    //    }
-    //}
-    //
-    //private let itemFormatter: DateFormatter = {
-    //    let formatter = DateFormatter()
-    //    formatter.dateStyle = .short
-    //    formatter.timeStyle = .medium
-    //    return formatter
+    
+    private func loginUser() {
+        FirebaseManager.shared.auth.signIn(withEmail: email, password: password) { result, error in
+            if let error = error {
+                print("Failed to create user", error)
+                self.loginStatusMessage = "Failed to log in the user: \(error)"
+                return
+            }
+            print("Succesfully created user\(result?.user.uid ?? "")")
+            self.loginStatusMessage = "Succesfully logged in as the user: \(result?.user.uid ?? "")"
+        
+        }
+    }
+    @State var loginStatusMessage = ""
+    private func createNewAccount() {
+        FirebaseManager.shared.auth.createUser(withEmail: email, password: password) { result, error in
+            if let error = error {
+                print("Failed to create user", error)
+                self.loginStatusMessage = "Failed to create user: \(error)"
+                return
+            }
+            print("Succesfully created user\(result?.user.uid ?? "")")
+            self.loginStatusMessage = "Succesfully created user: \(result?.user.uid ?? "")"
+        }
+    }
 }
 
 struct ContentView_Previews: PreviewProvider {
@@ -151,3 +121,73 @@ struct ContentView_Previews: PreviewProvider {
         LogInView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
     }
 }
+//    @Environment(\.managedObjectContext) private var viewContext
+//
+//    @FetchRequest(
+//        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
+//        animation: .default)
+//    private var items: FetchedResults<Item>
+//
+//    var body: some View {
+//        NavigationView {
+//            List {
+//                ForEach(items) { item in
+//                    NavigationLink {
+//                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
+//                    } label: {
+//                        Text(item.timestamp!, formatter: itemFormatter)
+//                    }
+//                }
+//                .onDelete(perform: deleteItems)
+//            }
+//            .toolbar {
+//                ToolbarItem(placement: .navigationBarTrailing) {
+//                    EditButton()
+//                }
+//                ToolbarItem {
+//                    Button(action: addItem) {
+//                        Label("Add Item", systemImage: "plus")
+//                    }
+//                }
+//            }
+//            Text("Select an item")
+//        }
+//    }
+//
+//    private func addItem() {
+//        withAnimation {
+//            let newItem = Item(context: viewContext)
+//            newItem.timestamp = Date()
+//
+//            do {
+//                try viewContext.save()
+//            } catch {
+//                // Replace this implementation with code to handle the error appropriately.
+//                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+//                let nsError = error as NSError
+//                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+//            }
+//        }
+//    }
+//
+//    private func deleteItems(offsets: IndexSet) {
+//        withAnimation {
+//            offsets.map { items[$0] }.forEach(viewContext.delete)
+//
+//            do {
+//                try viewContext.save()
+//            } catch {
+//                // Replace this implementation with code to handle the error appropriately.
+//                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+//                let nsError = error as NSError
+//                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+//            }
+//        }
+//    }
+//}
+//
+//private let itemFormatter: DateFormatter = {
+//    let formatter = DateFormatter()
+//    formatter.dateStyle = .short
+//    formatter.timeStyle = .medium
+//    return formatter
