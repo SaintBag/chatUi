@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		296E4B5F29003E15002165ED /* SwiftUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296E4B5E29003E15002165ED /* SwiftUIView.swift */; };
 		29E24B7A28FF196B002E8C0A /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 29E24B7928FF196B002E8C0A /* FirebaseAuth */; };
 		29E24B7C28FF196B002E8C0A /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 29E24B7B28FF196B002E8C0A /* FirebaseStorage */; };
 		29E24B7E28FF27F8002E8C0A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 29E24B7D28FF27F8002E8C0A /* GoogleService-Info.plist */; };
@@ -39,6 +40,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		296E4B5E29003E15002165ED /* SwiftUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIView.swift; sourceTree = "<group>"; };
 		29E24B7D28FF27F8002E8C0A /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		29FCF21A28FEE77D00226CDA /* chatUi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = chatUi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		29FCF21D28FEE77D00226CDA /* chatUiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = chatUiApp.swift; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 			children = (
 				29FCF21D28FEE77D00226CDA /* chatUiApp.swift */,
 				29FCF21F28FEE77D00226CDA /* LogInView.swift */,
+				296E4B5E29003E15002165ED /* SwiftUIView.swift */,
 				29FCF22128FEE78000226CDA /* Assets.xcassets */,
 				29E24B7D28FF27F8002E8C0A /* GoogleService-Info.plist */,
 				29FCF22628FEE78000226CDA /* Persistence.swift */,
@@ -282,6 +285,7 @@
 				29FCF22A28FEE78000226CDA /* chatUi.xcdatamodeld in Sources */,
 				29FCF22028FEE77D00226CDA /* LogInView.swift in Sources */,
 				29FCF21E28FEE77D00226CDA /* chatUiApp.swift in Sources */,
+				296E4B5F29003E15002165ED /* SwiftUIView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
