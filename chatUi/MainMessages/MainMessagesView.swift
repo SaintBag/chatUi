@@ -8,21 +8,18 @@
 import SwiftUI
 import SDWebImageSwiftUI
 
-struct ChatUser {
-    let uid: String
-    let email: String
-    let profileImageUrl: String
-}
-
 class MainMessageViewModel: ObservableObject {
     
     @Published var errorMessage = ""
     @Published var chatUser: ChatUser?
     
     init() {
+        DispatchQueue.main.async {
+            self.isUserCurrentlyLoggedOut = FirebaseManager.shared.auth.currentUser?.uid == nil
+        }
         fetchCurrentUser()
     }
-    private func fetchCurrentUser() {
+     func fetchCurrentUser() {
         
         guard let uid = FirebaseManager.shared.auth.currentUser?.uid else { return }
         FirebaseManager.shared.firestore.collection("users")
@@ -33,11 +30,14 @@ class MainMessageViewModel: ObservableObject {
                 }
                 guard let data = snapshot?.data() else {
                     return }
-                let uid = data["uid"] as? String ?? ""
-                let email = data["email"] as? String ?? ""
-                let profileImageUrl = data["profileImageUrl"] as? String ?? ""
-                self.chatUser = ChatUser(uid: uid, email: email, profileImageUrl: profileImageUrl)
+                //
+                self.chatUser = .init(data: data)
             }
+    }
+    @Published var isUserCurrentlyLoggedOut = false
+    func handleSignOut() {
+        isUserCurrentlyLoggedOut.toggle()
+        try? FirebaseManager.shared.auth.signOut()
     }
 }
 
@@ -85,9 +85,16 @@ struct MainMessagesView: View {
             .init(title: Text("Settings") , message: Text("What do you want to do?"), buttons: [
                 .destructive(Text("Sign Out"), action: {
                     print("handle sign out")
+                    viewModel.handleSignOut()
                 }),
                 .cancel()
             ])
+        }
+        .fullScreenCover(isPresented: $viewModel.isUserCurrentlyLoggedOut) {
+            LogInView(didCompleteLoginProcess: {
+                self.viewModel.isUserCurrentlyLoggedOut = false
+                self.viewModel.fetchCurrentUser()
+            })
         }
     }
     var body: some View {

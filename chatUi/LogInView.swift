@@ -11,11 +11,13 @@ import FirebaseFirestore
 
 struct LogInView: View {
     
-    @State var isLoginMode = false
-    @State var email = ""
-    @State var password = ""
-    @State var schouldShowImagePicker = false
-    @State var image: UIImage?
+    let didCompleteLoginProcess: () -> ()
+    
+    @State private var isLoginMode = false
+    @State private var email = ""
+    @State private var password = ""
+    @State private var schouldShowImagePicker = false
+    @State private var image: UIImage?
     
     var body: some View {
         NavigationView {
@@ -112,12 +114,17 @@ struct LogInView: View {
             }
             print("Succesfully created user\(result?.user.uid ?? "")")
             self.loginStatusMessage = "Succesfully logged in as the user: \(result?.user.uid ?? "")"
-            
+            self.didCompleteLoginProcess()
         }
     }
     @State var loginStatusMessage = ""
     
     private func createNewAccount() {
+        if self.image == nil {
+            self.loginStatusMessage = "You must select avatar fo your account."
+            return
+        }
+        
         FirebaseManager.shared.auth.createUser(withEmail: email, password: password) { result, error in
             if let error = error {
                 print("Failed to create user", error)
@@ -164,13 +171,17 @@ struct LogInView: View {
                     return
                 }
                 print("Succes")
+                self.didCompleteLoginProcess()
             }
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        LogInView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+        LogInView(didCompleteLoginProcess: {
+            print("hello")
+        })
+//            .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
     }
 }
 //    @Environment(\.managedObjectContext) private var viewContext
