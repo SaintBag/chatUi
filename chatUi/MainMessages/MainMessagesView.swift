@@ -159,7 +159,7 @@ struct MainMessagesView: View {
             .shadow(radius: 16)
         }
         .fullScreenCover(isPresented: $schouldShowNewMessageScreen, onDismiss: nil) {
-            Text("New Message Screen")
+            CreateNewMessageView()
         }
     }
 }
