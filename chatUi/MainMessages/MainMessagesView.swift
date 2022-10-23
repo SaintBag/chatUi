@@ -20,7 +20,7 @@ class MainMessageViewModel: ObservableObject {
         }
         fetchCurrentUser()
     }
-     func fetchCurrentUser() {
+    func fetchCurrentUser() {
         
         guard let uid = FirebaseManager.shared.auth.currentUser?.uid else { return }
         FirebaseManager.shared.firestore.collection("users")
@@ -31,7 +31,6 @@ class MainMessageViewModel: ObservableObject {
                 }
                 guard let data = snapshot?.data() else {
                     return }
-                //
                 self.chatUser = .init(data: data)
             }
     }
@@ -48,6 +47,8 @@ struct MainMessagesView: View {
     @State var schouldShowLogOutOptions = false
     @State var chatUser: ChatUser?
     @State var schouldShowNewMessageScreen = false
+    @State var schouldNavigateToChatLogView = false
+    
     
     private var customNavBar: some View {
         HStack(spacing: 16) {
@@ -106,6 +107,10 @@ struct MainMessagesView: View {
             VStack {
                 customNavBar
                 messagesScrollView
+                NavigationLink("", isActive: $schouldNavigateToChatLogView) {
+//                    Text("Chat log view")
+                    ChatLogView(chatUser: self.chatUser)
+                }
             }
             .overlay(
                 newMessageButton, alignment: .bottom)
@@ -116,21 +121,26 @@ struct MainMessagesView: View {
         ScrollView {
             ForEach(0..<10, id: \.self) { num in
                 VStack {
-                    HStack(spacing: 16) {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 36))
-                            .padding(8)
-                            .overlay(RoundedRectangle(cornerRadius: 46)
-                                .stroke(Color(.label), lineWidth: 3)
-                            )
-                        
-                        VStack(alignment: .leading) {
-                            Text("Username")
-                                .font(.system(size: 16, weight: .bold))
-                            Text("Message send to user")
-                                .font(.system(size: 14))
-                                .foregroundColor(Color(.lightGray))
+                    NavigationLink {
+                        Text("Destination")
+                    } label: {
+                        HStack(spacing: 16) {
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 36))
+                                .padding(8)
+                                .overlay(RoundedRectangle(cornerRadius: 46)
+                                    .stroke(Color(.label), lineWidth: 3)
+                                )
+                            
+                            VStack(alignment: .leading) {
+                                Text("Username")
+                                    .font(.system(size: 16, weight: .bold))
+                                Text("Message send to user")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(Color(.lightGray))
+                            }
                         }
+                        .foregroundColor(Color(.label))
                         Spacer()
                         Text("22d")
                             .font(.system(size: 14, weight: .semibold))
@@ -162,6 +172,7 @@ struct MainMessagesView: View {
         .fullScreenCover(isPresented: $schouldShowNewMessageScreen, onDismiss: nil) {
             CreateNewMessageView(didSelectNewUser: { user in
                 print(user.email)
+                self.schouldNavigateToChatLogView.toggle()
                 self.chatUser = user
             })
         }
@@ -171,5 +182,6 @@ struct MainMessagesView: View {
 struct MainMessagesView_Previews: PreviewProvider {
     static var previews: some View {
         MainMessagesView()
+//        ChatLogView()
     }
 }
