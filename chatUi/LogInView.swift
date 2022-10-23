@@ -179,7 +179,7 @@ struct LogInView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         LogInView(didCompleteLoginProcess: {
-            print("hello")
+//            print("hello")
         })
 //            .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
     }
