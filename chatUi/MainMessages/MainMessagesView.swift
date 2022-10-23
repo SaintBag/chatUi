@@ -46,6 +46,8 @@ struct MainMessagesView: View {
     
     @ObservedObject private var viewModel = MainMessageViewModel()
     @State var schouldShowLogOutOptions = false
+    @State var chatUser: ChatUser?
+    @State var schouldShowNewMessageScreen = false
     
     private var customNavBar: some View {
         HStack(spacing: 16) {
@@ -139,7 +141,6 @@ struct MainMessagesView: View {
             }.padding(.bottom, 50)
         }
     }
-    @State var schouldShowNewMessageScreen = false
     
     private var newMessageButton: some View {
         Button {
@@ -159,7 +160,10 @@ struct MainMessagesView: View {
             .shadow(radius: 16)
         }
         .fullScreenCover(isPresented: $schouldShowNewMessageScreen, onDismiss: nil) {
-            CreateNewMessageView()
+            CreateNewMessageView(didSelectNewUser: { user in
+                print(user.email)
+                self.chatUser = user
+            })
         }
     }
 }
