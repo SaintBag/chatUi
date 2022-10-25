@@ -36,6 +36,7 @@ class ChatLogViewModel: ObservableObject {
     @Published var chatText = ""
     @Published var errorMessage = ""
     @Published var chatMessages = [ChatMessage]()
+    @Published var count = 0
     
     let chatUser: ChatUser?
     init(chatUser: ChatUser?) {
@@ -68,6 +69,9 @@ class ChatLogViewModel: ObservableObject {
                         
                     }
                 })
+                DispatchQueue.main.async {
+                    self.count += 1
+                }
             }
     }
     
@@ -91,6 +95,7 @@ class ChatLogViewModel: ObservableObject {
             }
             self.chatText = ""
             //            print("Successfully saved current user sending message")
+            self.count += 1
         }
         
         let recipientMessageDocument =
@@ -128,27 +133,25 @@ struct ChatLogView: View {
         }
         .navigationTitle(chatUser?.email ?? "")
         .navigationBarTitleDisplayMode(.inline)
-        
     }
     private var messagesView: some View {
         VStack {
             ScrollView {
-                ForEach(viewModel.chatMessages) { message in
-                    HStack {
-                        Spacer()
-                        HStack {
-                            Text(message.text)
-                                .foregroundColor(.white)
+                ScrollViewReader { ScrollViewProxy  in
+                    VStack {
+                        ForEach(viewModel.chatMessages) { message in
+                            MessageView(message: message)
                         }
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(8)
+                        HStack {
+                            Spacer()
+                        }
+                        .id("Empty")
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                }
-                HStack {
-                    Spacer()
+                    .onReceive(viewModel.$count) { _ in
+                        withAnimation(.easeOut(duration: 0.5)) {
+                            ScrollViewProxy.scrollTo("Empty", anchor: .bottom)
+                        }
+                    }
                 }
             }
             .background(Color(.init(white: 0.95, alpha: 1)))
@@ -184,6 +187,40 @@ struct ChatLogView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
+    }
+}
+
+private struct MessageView: View {
+    
+    let message: ChatMessage
+    var body: some View {
+        VStack {
+            if message.senderId == FirebaseManager.shared.auth.currentUser?.uid {
+                HStack {
+                    Spacer()
+                    HStack {
+                        Text(message.text)
+                            .foregroundColor(.white)
+                    }
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(8)
+                }
+            } else {
+                HStack {
+                    HStack {
+                        Text(message.text)
+                            .foregroundColor(Color(.label))
+                    }
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(8)
+                    Spacer()
+                }
+            }
+        }
+        .padding(.horizontal)
+        .padding(.top, 8)
     }
 }
 
