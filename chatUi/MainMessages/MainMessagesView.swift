@@ -103,12 +103,10 @@ struct MainMessagesView: View {
     }
     var body: some View {
         NavigationView {
-            
             VStack {
                 customNavBar
                 messagesScrollView
                 NavigationLink("", isActive: $schouldNavigateToChatLogView) {
-//                    Text("Chat log view")
                     ChatLogView(chatUser: self.chatUser)
                 }
             }
@@ -122,7 +120,7 @@ struct MainMessagesView: View {
             ForEach(0..<10, id: \.self) { num in
                 VStack {
                     NavigationLink {
-                        Text("Destination")
+//                        Text("Destination")
                     } label: {
                         HStack(spacing: 16) {
                             Image(systemName: "person.fill")
