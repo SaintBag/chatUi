@@ -9,13 +9,65 @@ import SwiftUI
 import Firebase
 import FirebaseFirestore
 
+struct FirebaseConstans {
+    static let senderId = "senderId"
+    static let reciverId = "reciverId"
+    static let text = "text"
+}
+
+struct ChatMessage: Identifiable {
+    var id: String { documentId }
+    
+    let documentId: String
+    let senderId: String
+    let reciverID: String
+    let text: String
+    
+    init(documentId: String, data: [String: Any]) {
+        self.documentId = documentId
+        self.senderId = data[FirebaseConstans.senderId] as? String ?? ""
+        self.reciverID = data[FirebaseConstans.reciverId] as? String ?? ""
+        self.text = data[FirebaseConstans.text] as? String ?? ""
+    }
+    
+}
+
 class ChatLogViewModel: ObservableObject {
     @Published var chatText = ""
     @Published var errorMessage = ""
+    @Published var chatMessages = [ChatMessage]()
     
     let chatUser: ChatUser?
     init(chatUser: ChatUser?) {
         self.chatUser = chatUser
+        fetchMessage()
+    }
+    
+    private func fetchMessage() {
+        guard let senderId = FirebaseManager.shared.auth.currentUser?.uid else { return }
+        
+        guard let reciverId = chatUser?.uid else { return }
+        
+        FirebaseManager.shared.firestore
+            .collection("messages")
+            .document(senderId)
+            .collection(reciverId)
+        //        let guerySnapshot = ""
+            .addSnapshotListener { querySnapshot, error in
+                if let error = error {
+                    self.errorMessage = "Failed to listed for messages \(error)"
+                    print(error.localizedDescription)
+                    return
+                }
+                querySnapshot?.documents.forEach({ queryDocumentsSnapshot in
+                    let data = queryDocumentsSnapshot.data()
+                    let documentId = queryDocumentsSnapshot.documentID
+                    let chatMessage = ChatMessage(documentId: documentId, data: data)
+                    self.chatMessages.append(chatMessage)
+                    // self.chatMessages.apend(.init(data: data))
+                })
+            }
+        
     }
     func handleSend() {
         print(chatText)
@@ -28,7 +80,7 @@ class ChatLogViewModel: ObservableObject {
             .document(senderId)
             .collection(reciverId)
             .document()
-        let messageData = ["senderID": senderId, "reciverId": reciverId, "text": self.chatText, "timestamp": Timestamp()] as [String: Any]
+        let messageData = [FirebaseConstans.senderId: senderId, FirebaseConstans.reciverId: reciverId, FirebaseConstans.text: self.chatText, "timestamp": Timestamp()] as [String: Any]
         
         document.setData(messageData) { error in
             if let error = error {
@@ -36,7 +88,7 @@ class ChatLogViewModel: ObservableObject {
                 return
             }
             self.chatText = ""
-//            print("Successfully saved current user sending message")
+            //            print("Successfully saved current user sending message")
         }
         
         let recipientMessageDocument =
@@ -50,7 +102,7 @@ class ChatLogViewModel: ObservableObject {
                 self.errorMessage = "failed to save messages data to firebase \(error)"
                 return
             }
-//            print("Successfully saved recipient message")
+            //            print("Successfully saved recipient message")
         }
     }
 }
@@ -79,11 +131,11 @@ struct ChatLogView: View {
     private var messagesView: some View {
         VStack {
             ScrollView {
-                ForEach(0..<20) { num in
+                ForEach(viewModel.chatMessages) { message in
                     HStack {
                         Spacer()
                         HStack {
-                            Text("Fake message text here")
+                            Text(message.text)
                                 .foregroundColor(.white)
                         }
                         .padding()
@@ -148,9 +200,9 @@ private struct DescriptionPlaceholder: View {
 
 struct ChatLogView_Previews: PreviewProvider {
     static var previews: some View {
-//        NavigationView {
-//            ChatLogView(chatUser: .init(data: ["uid": "OqnHwFModBM2U3sKamub9o6WY2p1","email": "flowers@gmail.com"]))
-//        }
+        //        NavigationView {
+        //            ChatLogView(chatUser: .init(data: ["uid": "OqnHwFModBM2U3sKamub9o6WY2p1","email": "flowers@gmail.com"]))
+        //        }
         MainMessagesView()
     }
 }
