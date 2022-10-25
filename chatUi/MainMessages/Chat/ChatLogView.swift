@@ -52,7 +52,7 @@ class ChatLogViewModel: ObservableObject {
             .collection("messages")
             .document(senderId)
             .collection(reciverId)
-        //        let guerySnapshot = ""
+            .order(by: "timestamp")
             .addSnapshotListener { querySnapshot, error in
                 if let error = error {
                     self.errorMessage = "Failed to listed for messages \(error)"
@@ -69,8 +69,8 @@ class ChatLogViewModel: ObservableObject {
                     }
                 })
             }
-        
     }
+    
     func handleSend() {
         print(chatText)
         guard let senderId = FirebaseManager.shared.auth.currentUser?.uid else { return }
