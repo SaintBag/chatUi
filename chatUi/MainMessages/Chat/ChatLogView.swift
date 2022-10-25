@@ -29,7 +29,6 @@ struct ChatMessage: Identifiable {
         self.reciverID = data[FirebaseConstans.reciverId] as? String ?? ""
         self.text = data[FirebaseConstans.text] as? String ?? ""
     }
-    
 }
 
 class ChatLogViewModel: ObservableObject {
@@ -73,12 +72,11 @@ class ChatLogViewModel: ObservableObject {
                     self.count += 1
                 }
             }
-    }
+        }
     
     func handleSend() {
         print(chatText)
         guard let senderId = FirebaseManager.shared.auth.currentUser?.uid else { return }
-        
         guard let reciverId = chatUser?.uid else { return }
         
         let document =
@@ -86,7 +84,8 @@ class ChatLogViewModel: ObservableObject {
             .document(senderId)
             .collection(reciverId)
             .document()
-        let messageData = [FirebaseConstans.senderId: senderId, FirebaseConstans.reciverId: reciverId, FirebaseConstans.text: self.chatText, "timestamp": Timestamp()] as [String: Any]
+        let messageData =
+        [FirebaseConstans.senderId: senderId, FirebaseConstans.reciverId: reciverId, FirebaseConstans.text: self.chatText, "timestamp": Timestamp()] as [String: Any]
         
         document.setData(messageData) { error in
             if let error = error {
@@ -94,7 +93,7 @@ class ChatLogViewModel: ObservableObject {
                 return
             }
             self.chatText = ""
-            //            print("Successfully saved current user sending message")
+                        print("Successfully saved current user sending message")
             self.count += 1
         }
         
@@ -109,7 +108,7 @@ class ChatLogViewModel: ObservableObject {
                 self.errorMessage = "failed to save messages data to firebase \(error)"
                 return
             }
-            //            print("Successfully saved recipient message")
+                        print("Successfully saved recipient message")
         }
     }
 }
@@ -122,8 +121,6 @@ struct ChatLogView: View {
         self.chatUser = chatUser
         self.viewModel = .init(chatUser: chatUser)
     }
-    
-    //    @State var chatText = ""
     @ObservedObject var viewModel: ChatLogViewModel
     
     var body: some View {
@@ -239,9 +236,6 @@ private struct DescriptionPlaceholder: View {
 
 struct ChatLogView_Previews: PreviewProvider {
     static var previews: some View {
-        //        NavigationView {
-        //            ChatLogView(chatUser: .init(data: ["uid": "OqnHwFModBM2U3sKamub9o6WY2p1","email": "flowers@gmail.com"]))
-        //        }
         MainMessagesView()
     }
 }
