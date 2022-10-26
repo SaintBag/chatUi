@@ -7,18 +7,45 @@
 
 import SwiftUI
 import SDWebImageSwiftUI
+import Firebase
+import FirebaseFirestore
+
+struct RecentMessage: Identifiable {
+    var id: String { documentId }
+    
+    let documentId: String
+    let text: String
+    let senderId: String
+    let reciverId: String
+    let email: String
+    let profileImageUrl: String
+    let timestamp: Timestamp
+    
+    init(documentId: String, data: [String: Any]) {
+        
+        self.documentId = documentId
+        self.text = data[FirebaseConstans.text] as? String ?? ""
+        self.senderId = data[FirebaseConstans.senderId] as? String ?? ""
+        self.reciverId = data[FirebaseConstans.reciverId] as? String ?? ""
+        self.email = data[FirebaseConstans.email] as? String ?? ""
+        self.profileImageUrl = data[FirebaseConstans.profileImageUrl] as? String ?? ""
+        self.timestamp = data[FirebaseConstans.timestamp] as? Timestamp ?? Timestamp(date: Date())
+    }
+}
 
 class MainMessageViewModel: ObservableObject {
     
     @Published var errorMessage = ""
     @Published var chatUser: ChatUser?
     @Published var isUserCurrentlyLoggedOut = false
+    @Published var recentMessages = [RecentMessage]()
     
     init() {
         DispatchQueue.main.async {
             self.isUserCurrentlyLoggedOut = FirebaseManager.shared.auth.currentUser?.uid == nil
         }
         fetchCurrentUser()
+        fetchRecentMessages()
     }
     func fetchCurrentUser() {
         
@@ -38,6 +65,36 @@ class MainMessageViewModel: ObservableObject {
     func handleSignOut() {
         isUserCurrentlyLoggedOut.toggle()
         try? FirebaseManager.shared.auth.signOut()
+    }
+    
+    private func fetchRecentMessages() {
+        guard let uid = FirebaseManager.shared.auth.currentUser?.uid else { return }
+        
+        FirebaseManager.shared.firestore
+            .collection("recent_messages")
+            .document(uid)
+            .collection("messages")
+            .order(by: "timestamp")
+            .addSnapshotListener { querySnapshot, error in
+                if let error = error {
+                    self.errorMessage = "Failed to listen for recent messages: \(error)"
+                    print("Failed to listen for recent messages: \(error)")
+                    return
+                }
+                
+                querySnapshot?.documentChanges.forEach({ change in
+                        let documentId = change.document.documentID
+                        let changeDocumentDict = change.document.data()
+                    
+                    if let index = self.recentMessages.firstIndex(where: { rMessage in
+                        return rMessage.documentId == documentId
+                    }) {
+                        self.recentMessages.remove(at: index)
+                    }
+                    self.recentMessages.insert(.init(documentId: documentId, data: changeDocumentDict), at: 0)
+                        
+                })
+            }
     }
 }
 
@@ -64,7 +121,7 @@ struct MainMessagesView: View {
                 .shadow(radius: 10)
             VStack(alignment: .leading) {
                 let nameFromEmail = viewModel.chatUser?.email.replacingOccurrences(of: "@gmail.com", with: "") ?? ""
-                Text(nameFromEmail)
+                Text(nameFromEmail.capitalized)
                     .font(.system(size: 24, weight: .bold))
                 HStack {
                     Circle()
@@ -117,25 +174,36 @@ struct MainMessagesView: View {
     }
     private var messagesScrollView: some View {
         ScrollView {
-            ForEach(0..<10, id: \.self) { num in
+            
+            ForEach(viewModel.recentMessages) { recentMessage in
                 VStack {
                     NavigationLink {
-//                        Text("Destination")
+                        Text("Destination")
                     } label: {
                         HStack(spacing: 16) {
-                            Image(systemName: "person.fill")
-                                .font(.system(size: 36))
+
+                            WebImage(url: URL(string: recentMessage.profileImageUrl))
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 44, height: 44)
+                                .clipped()
+                                .cornerRadius(44)
+                                .overlay(RoundedRectangle(cornerRadius: 44)
+                                    .stroke(Color(.label), lineWidth: 3))
+                                .shadow(radius: 10)
                                 .padding(8)
-                                .overlay(RoundedRectangle(cornerRadius: 46)
-                                    .stroke(Color(.label), lineWidth: 3)
-                                )
-                            
+
                             VStack(alignment: .leading) {
-                                Text("Username")
+                                let nameFromEmail = recentMessage.email.replacingOccurrences(of: "@gmail.com", with: "").capitalized
+                                
+                                Text(nameFromEmail)
                                     .font(.system(size: 16, weight: .bold))
-                                Text("Message send to user")
+                                    .foregroundColor(Color(.label))
+                                    Spacer()
+                                Text(recentMessage.text)
                                     .font(.system(size: 14))
-                                    .foregroundColor(Color(.lightGray))
+                                    .foregroundColor(Color(.darkGray))
+                                    .multilineTextAlignment(.leading)
                             }
                         }
                         .foregroundColor(Color(.label))
@@ -180,6 +248,6 @@ struct MainMessagesView: View {
 struct MainMessagesView_Previews: PreviewProvider {
     static var previews: some View {
         MainMessagesView()
-//        ChatLogView()
+//                ChatLogView()
     }
 }
