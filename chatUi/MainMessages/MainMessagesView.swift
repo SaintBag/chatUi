@@ -10,8 +10,6 @@ import SDWebImageSwiftUI
 import Firebase
 import FirebaseFirestore
 
-
-
 class MainMessageViewModel: ObservableObject {
     
     @Published var errorMessage = ""
