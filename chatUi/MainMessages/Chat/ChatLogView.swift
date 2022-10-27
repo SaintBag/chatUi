@@ -9,17 +9,6 @@ import SwiftUI
 import Firebase
 import FirebaseFirestore
 
-struct FirebaseConstans {
-    static let senderId = "senderId"
-    static let reciverId = "reciverId"
-    static let text = "text"
-    static let timestamp = "timestamp"
-    static let recentMessages = "recent_messages"
-    static let messages = "messages"
-    static let profileImageUrl = "profileImageUrl"
-    static let email = "email"
-}
-
 class ChatLogViewModel: ObservableObject {
     @Published var chatText = ""
     @Published var errorMessage = ""
