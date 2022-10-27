@@ -20,22 +20,6 @@ struct FirebaseConstans {
     static let email = "email"
 }
 
-struct ChatMessage: Identifiable {
-    var id: String { documentId }
-    
-    let documentId: String
-    let senderId: String
-    let reciverId: String
-    let text: String
-    
-    init(documentId: String, data: [String: Any]) {
-        self.documentId = documentId
-        self.senderId = data[FirebaseConstans.senderId] as? String ?? ""
-        self.reciverId = data[FirebaseConstans.reciverId] as? String ?? ""
-        self.text = data[FirebaseConstans.text] as? String ?? ""
-    }
-}
-
 class ChatLogViewModel: ObservableObject {
     @Published var chatText = ""
     @Published var errorMessage = ""
