@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		292298452901C27B001F6EFF /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 292298442901C27B001F6EFF /* SDWebImageSwiftUI */; };
 		292BFE972902BFF500CA6014 /* ChatUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292BFE962902BFF500CA6014 /* ChatUser.swift */; };
+		2947A2B5290AA7FF007B59A7 /* RecentMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2947A2B4290AA7FF007B59A7 /* RecentMessage.swift */; };
 		294FC38C290557920050C403 /* CreateNewMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 294FC38B290557920050C403 /* CreateNewMessageView.swift */; };
 		294FC38F2905AAF40050C403 /* ChatLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 294FC38E2905AAF40050C403 /* ChatLogView.swift */; };
 		295D08B729014243004BCB34 /* MainMessagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 295D08B629014243004BCB34 /* MainMessagesView.swift */; };
@@ -48,6 +49,7 @@
 
 /* Begin PBXFileReference section */
 		292BFE962902BFF500CA6014 /* ChatUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatUser.swift; sourceTree = "<group>"; };
+		2947A2B4290AA7FF007B59A7 /* RecentMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentMessage.swift; sourceTree = "<group>"; };
 		294FC38B290557920050C403 /* CreateNewMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateNewMessageView.swift; sourceTree = "<group>"; };
 		294FC38E2905AAF40050C403 /* ChatLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLogView.swift; sourceTree = "<group>"; };
 		295D08B629014243004BCB34 /* MainMessagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMessagesView.swift; sourceTree = "<group>"; };
@@ -101,6 +103,7 @@
 			isa = PBXGroup;
 			children = (
 				292BFE962902BFF500CA6014 /* ChatUser.swift */,
+				2947A2B4290AA7FF007B59A7 /* RecentMessage.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -351,6 +354,7 @@
 				29CBC4E72901872300BE2617 /* FirebaseManager.swift in Sources */,
 				29FCF22A28FEE78000226CDA /* chatUi.xcdatamodeld in Sources */,
 				29FCF22028FEE77D00226CDA /* LogInView.swift in Sources */,
+				2947A2B5290AA7FF007B59A7 /* RecentMessage.swift in Sources */,
 				29FCF21E28FEE77D00226CDA /* chatUiApp.swift in Sources */,
 				296E4B5F29003E15002165ED /* SwiftUIView.swift in Sources */,
 			);
