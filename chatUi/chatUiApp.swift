@@ -13,8 +13,9 @@ struct chatUiApp: App {
 
     var body: some Scene {
         WindowGroup {
-            LogInView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            MainMessagesView()
+//            LogInView()
+//                .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
 }

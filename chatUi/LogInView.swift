@@ -7,23 +7,17 @@
 
 import SwiftUI
 import Firebase
-//import CoreData
+import FirebaseFirestore
 
-class FirebaseManager: NSObject {
-    
-    let auth: Auth
-    static let shared = FirebaseManager()
-    override init() {
-        FirebaseApp.configure()
-        self.auth = Auth.auth()
-            super.init()
-    }
-}
 struct LogInView: View {
     
-    @State var isLoginMode = false
-    @State var email = ""
-    @State var password = ""
+    let didCompleteLoginProcess: () -> ()
+    
+    @State private var isLoginMode = false
+    @State private var email = ""
+    @State private var password = ""
+    @State private var schouldShowImagePicker = false
+    @State private var image: UIImage?
     
     var body: some View {
         NavigationView {
@@ -37,14 +31,31 @@ struct LogInView: View {
                             .tag(false)
                     }.pickerStyle(SegmentedPickerStyle())
                         .padding()
+                    
                     if !isLoginMode {
                         Button {
-                            
+                            schouldShowImagePicker.toggle()
                         }
                     label: {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 64))
-                            .padding()
+                        
+                        VStack {
+                            
+                            if let image = self.image {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 128, height: 128)
+                                    .cornerRadius(64)
+                                
+                            } else {
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 64))
+                                    .padding()
+                                    .foregroundColor(Color(.label))
+                            }
+                        }
+                        .overlay(RoundedRectangle(cornerRadius: 64)
+                            .stroke(Color.black, lineWidth: 3))
                     }
                     }
                     Group {
@@ -79,11 +90,15 @@ struct LogInView: View {
                 .ignoresSafeArea())
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .fullScreenCover(isPresented: $schouldShowImagePicker, onDismiss: nil) {
+            ImagePicker(image: $image)
+        }
     }
+    
     private func handleAction() {
         if isLoginMode {
             loginUser()
-//            print("Schould log into Firebase with existing credentials")
+            //            print("Schould log into Firebase with existing credentials")
         } else {
             createNewAccount()
             //            print("Schould register a new account inside of Firebase with Auth and schould upload image somehow")
@@ -99,11 +114,17 @@ struct LogInView: View {
             }
             print("Succesfully created user\(result?.user.uid ?? "")")
             self.loginStatusMessage = "Succesfully logged in as the user: \(result?.user.uid ?? "")"
-        
+            self.didCompleteLoginProcess()
         }
     }
     @State var loginStatusMessage = ""
+    
     private func createNewAccount() {
+        if self.image == nil {
+            self.loginStatusMessage = "You must select avatar fo your account."
+            return
+        }
+        
         FirebaseManager.shared.auth.createUser(withEmail: email, password: password) { result, error in
             if let error = error {
                 print("Failed to create user", error)
@@ -112,13 +133,55 @@ struct LogInView: View {
             }
             print("Succesfully created user\(result?.user.uid ?? "")")
             self.loginStatusMessage = "Succesfully created user: \(result?.user.uid ?? "")"
+            self.persistImageToStorage()
         }
+    }
+    
+    private func persistImageToStorage() {
+        //        let filename = UUID().uuidString
+        guard let uid = FirebaseManager.shared.auth.currentUser?.uid
+        else { return }
+        let ref = FirebaseManager.shared.storage.reference(withPath: uid)
+        guard let imageData = self.image?.jpegData(compressionQuality: 0.5)
+        else { return }
+        ref.putData(imageData, metadata: nil) { metadata, error in
+            if let error = error {
+                self.loginStatusMessage = "Failed to push image to storage: \(error)"
+                return
+            }
+            ref.downloadURL { url, error in
+                if let error = error {
+                    self.loginStatusMessage = "Failed to recive downloadUrl: \(error)"
+                    return
+                }
+                self.loginStatusMessage = "Succesfully stored image with url: \(url?.absoluteString ?? "")"
+                guard let url = url else { return }
+    self.storeUserInformation(imageProfileURL: url)
+            }
+        }
+    }
+    private func storeUserInformation(imageProfileURL: URL) {
+        guard let uid = FirebaseManager.shared.auth.currentUser?.uid else { return }
+        let userData = ["email": self.email, "uid": uid, "profileImageUrl": imageProfileURL.absoluteString]
+        FirebaseManager.shared.firestore.collection("users")
+            .document(uid).setData(userData) { error in
+                if let error = error {
+                    print(error)
+                    self.loginStatusMessage = "\(error)"
+                    return
+                }
+                print("Succes")
+                self.didCompleteLoginProcess()
+            }
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        LogInView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+        LogInView(didCompleteLoginProcess: {
+//            print("hello")
+        })
+//            .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
     }
 }
 //    @Environment(\.managedObjectContext) private var viewContext
