@@ -28,7 +28,6 @@ class CreateNewMessageViewModel: ObservableObject {
                     if user.uid != FirebaseManager.shared.auth.currentUser?.uid {
                         self.users.append(.init(data: data))
                     }
-                    
                 })
             }
     }
@@ -47,7 +46,6 @@ struct CreateNewMessageView: View {
                 Text(viewModel.errorMessage)
                 ForEach(viewModel.users) { user in
                     Button {
-                        //TODO: add the funcionallity for the button
                         presentationMode.wrappedValue.dismiss()
                         didSelectNewUser(user)
                     } label: {
@@ -85,7 +83,6 @@ struct CreateNewMessageView: View {
 
 struct CreateNewMessageView_Previews: PreviewProvider {
     static var previews: some View {
-        //        CreateNewMessageView()
         MainMessagesView()
     }
 }

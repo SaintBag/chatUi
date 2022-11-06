@@ -120,32 +120,30 @@ class ChatLogViewModel: ObservableObject {
             }
             
         //TODO: need to fix this data and set data
-//        let dataReciver = [
-//            FirebaseConstans.timestamp: Timestamp(),
-//            FirebaseConstans.text: self.chatText,
-//            FirebaseConstans.senderId: uid,
-//            FirebaseConstans.reciverId: reciverId,
-//            FirebaseConstans.profileImageUrl: chatUser.profileImageUrl,
-//            FirebaseConstans.email: chatUser.email
-//        ] as [String : Any]
-//
-//
-//        // need to save another very similar dict for recipient of this message
-//        let recipientDocument =
-//        FirebaseManager.shared.firestore
-//            .collection(FirebaseConstans.recentMessages)
-//            .document(reciverId)
-//            .collection(FirebaseConstans.messages)
-//            .document(uid)
-//
-//
-//            recipientDocument.setData(dataReciver) { error in
-//                if let error = error {
-//                    self.errorMessage = "Failed to save recent message: \(error)"
-//                    print("Failed to save recent message: \(error)")
-//                    return
-//                }
-//            }
+        let dataReciver = [
+            FirebaseConstans.timestamp: Timestamp(),
+            FirebaseConstans.text: self.chatText,
+            FirebaseConstans.senderId: uid,
+            FirebaseConstans.reciverId: reciverId,
+            FirebaseConstans.profileImageUrl: chatUser.profileImageUrl,
+            FirebaseConstans.email: chatUser.email
+        ] as [String : Any]
+
+        let recipientDocument =
+        FirebaseManager.shared.firestore
+            .collection(FirebaseConstans.recentMessages)
+            .document(reciverId)
+            .collection(FirebaseConstans.messages)
+            .document(uid)
+
+
+            recipientDocument.setData(dataReciver) { error in
+                if let error = error {
+                    self.errorMessage = "Failed to save recent message: \(error)"
+                    print("Failed to save recent message: \(error)")
+                    return
+                }
+            }
         
         }
     }

@@ -9,71 +9,9 @@ import SwiftUI
 import SDWebImageSwiftUI
 import Firebase
 import FirebaseFirestore
+import FirebaseFirestoreSwift
 
-class MainMessageViewModel: ObservableObject {
-    
-    @Published var errorMessage = ""
-    @Published var chatUser: ChatUser?
-    @Published var isUserCurrentlyLoggedOut = false
-    @Published var recentMessages = [RecentMessage]()
-    
-    init() {
-        DispatchQueue.main.async {
-            self.isUserCurrentlyLoggedOut = FirebaseManager.shared.auth.currentUser?.uid == nil
-        }
-        fetchCurrentUser()
-        fetchRecentMessages()
-    }
-    func fetchCurrentUser() {
-        
-        guard let uid = FirebaseManager.shared.auth.currentUser?.uid else { return }
-        FirebaseManager.shared.firestore.collection("users")
-            .document(uid).getDocument { snapshot, error in
-                if let error = error {
-                    self.errorMessage = "Failed to fetch current user:, \(error)"
-                    return
-                }
-                guard let data = snapshot?.data() else {
-                    return }
-                self.chatUser = .init(data: data)
-            }
-    }
-    
-    func handleSignOut() {
-        isUserCurrentlyLoggedOut.toggle()
-        try? FirebaseManager.shared.auth.signOut()
-    }
-    
-    private func fetchRecentMessages() {
-        guard let uid = FirebaseManager.shared.auth.currentUser?.uid else { return }
-        
-        FirebaseManager.shared.firestore
-            .collection("recent_messages")
-            .document(uid)
-            .collection("messages")
-            .order(by: "timestamp")
-            .addSnapshotListener { querySnapshot, error in
-                if let error = error {
-                    self.errorMessage = "Failed to listen for recent messages: \(error)"
-                    print("Failed to listen for recent messages: \(error)")
-                    return
-                }
-                
-                querySnapshot?.documentChanges.forEach({ change in
-                        let documentId = change.document.documentID
-                        let changeDocumentDict = change.document.data()
-                    
-                    if let index = self.recentMessages.firstIndex(where: { rMessage in
-                        return rMessage.documentId == documentId
-                    }) {
-                        self.recentMessages.remove(at: index)
-                    }
-                    self.recentMessages.insert(.init(documentId: documentId, data: changeDocumentDict), at: 0)
-                        
-                })
-            }
-    }
-}
+
 
 struct MainMessagesView: View {
     
@@ -158,7 +96,7 @@ struct MainMessagesView: View {
                         Text("Here new window schould show.")
                     } label: {
                         HStack(spacing: 16) {
-
+                            
                             WebImage(url: URL(string: recentMessage.profileImageUrl))
                                 .resizable()
                                 .scaledToFill()
@@ -169,14 +107,15 @@ struct MainMessagesView: View {
                                     .stroke(Color(.label), lineWidth: 3))
                                 .shadow(radius: 10)
                                 .padding(8)
-
+                            
                             VStack(alignment: .leading) {
                                 let nameFromEmail = recentMessage.email.replacingOccurrences(of: "@gmail.com", with: "").capitalized
                                 
                                 Text(nameFromEmail)
                                     .font(.system(size: 16, weight: .bold))
                                     .foregroundColor(Color(.label))
-                                    Spacer()
+                                    .multilineTextAlignment(.leading)
+                                Spacer()
                                 Text(recentMessage.text)
                                     .font(.system(size: 14))
                                     .foregroundColor(Color(.darkGray))
@@ -185,7 +124,7 @@ struct MainMessagesView: View {
                         }
                         .foregroundColor(Color(.label))
                         Spacer()
-                        Text("22d")
+                        Text(recentMessage.timestamp.formatted())
                             .font(.system(size: 14, weight: .semibold))
                     }
                     Divider()
@@ -225,6 +164,5 @@ struct MainMessagesView: View {
 struct MainMessagesView_Previews: PreviewProvider {
     static var previews: some View {
         MainMessagesView()
-//                ChatLogView()
     }
 }
